@@ -11,7 +11,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
-@Path("/api/persons")
+@Path("persons")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RequestScoped
@@ -34,7 +34,7 @@ public class PersonResource {
     }
 
     @DELETE
-    @Path("/{id}")
+    @Path("{id}")
     @Transactional
     public Response delete(@PathParam("id") Long id) {
         personService.delete(id);

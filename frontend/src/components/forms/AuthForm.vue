@@ -54,7 +54,7 @@ export default {
     },
     try_auth() {
       if (this.validateFields()) {
-        axios.post('/backend-1.0-SNAPSHOT/auth/login', {
+        axios.post('/backend-1.0-SNAPSHOT/api/auth/login', {
           username: this.usr.login,
           password: this.usr.password
         })
@@ -76,7 +76,7 @@ export default {
       }
     },
     try_register() {
-      axios.defaults.baseURL = '/backend-1.0-SNAPSHOT/';
+      // axios.defaults.baseURL = '/backend-1.0-SNAPSHOT/';
       if (this.validateFields()) {
         axios.post('/backend-1.0-SNAPSHOT/api/auth/register', {
           username: this.usr.login,

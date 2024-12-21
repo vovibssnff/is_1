@@ -7,11 +7,11 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.io.InputStream;
 
-@Path("/frontend")
-public class StaticContentResource {
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public InputStream getIndex() {
-        return getClass().getResourceAsStream("/frontend/index.html");
-    }
-}
+//@Path("/frontend")
+//public class StaticContentResource {
+//    @GET
+//    @Produces(MediaType.TEXT_HTML)
+//    public InputStream getIndex() {
+//        return getClass().getResourceAsStream("index.html");
+//    }
+//}

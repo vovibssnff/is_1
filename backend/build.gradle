@@ -25,12 +25,17 @@ dependencies {
     compileOnly('jakarta.platform:jakarta.jakartaee-api:10.0.0')
     compileOnly('jakarta.mvc:jakarta.mvc-api:2.1.0')
     compileOnly('jakarta.xml.ws:jakarta.xml.ws-api:4.0.0')
+    // https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api
+    compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")
     implementation('org.hibernate:hibernate-core:6.3.1.Final')
     implementation('org.glassfish.jaxb:jaxb-runtime:4.0.3')
     implementation('org.hibernate.validator:hibernate-validator:8.0.1.Final')
     implementation("org.postgresql:postgresql:42.7.4")
     // https://mvnrepository.com/artifact/jakarta.security.enterprise/jakarta.security.enterprise-api
     implementation("jakarta.security.enterprise:jakarta.security.enterprise-api:4.0.0")
+    // https://mvnrepository.com/artifact/org.restlet/org.restlet
+    implementation("org.restlet:org.restlet:2.5.0-rc1")
+
 
 
     compileOnly 'org.projectlombok:lombok:1.18.20'

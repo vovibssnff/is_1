@@ -16,7 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
-@Path("/api/dragons")
+@Path("dragons")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @RequestScoped
@@ -34,10 +34,10 @@ public class DragonResource {
 
     @GET
     public Response getAllDragons() {
-        User currentUser = getCurrentUser();
-        if (currentUser == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
+//        User currentUser = getCurrentUser();
+//        if (currentUser == null) {
+//            return Response.status(Response.Status.UNAUTHORIZED).build();
+//        }
         List<Dragon> dragons = dragonService.getAllDragons();
         return Response.ok(dragons).build();
     }
@@ -54,7 +54,7 @@ public class DragonResource {
     }
 
     @DELETE
-    @Path("/{id}")
+    @Path("{id}")
     @Transactional
     public Response deleteDragon(@PathParam("id") Long id) {
         User currentUser = getCurrentUser();
@@ -66,7 +66,7 @@ public class DragonResource {
     }
 
     @PUT
-    @Path("/{id}")
+    @Path("{id}")
     @Transactional
     public Response updateDragon(@PathParam("id") Long id, Dragon updatedDragon) {
         User currentUser = getCurrentUser();
@@ -78,7 +78,7 @@ public class DragonResource {
     }
 
     @GET
-    @Path("/counts-by-character")
+    @Path("counts-by-character")
     public Response countDragonsByCharacter() {
         User currentUser = getCurrentUser();
         if (currentUser == null) {
@@ -89,7 +89,7 @@ public class DragonResource {
     }
 
     @GET
-    @Path("/count-greater-than")
+    @Path("count-greater-than")
     public Response countDragonsWithCharacterGreaterThan(@QueryParam("character") DragonCharacter character) {
         User currentUser = getCurrentUser();
         if (currentUser == null) {

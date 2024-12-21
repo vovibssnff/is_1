@@ -23,7 +23,20 @@ public class DragonHeadService {
     }
 
     @Transactional
-    public DragonHead createOrUpdate(DragonHead dragonHead) {
+    public DragonHead createOrUpdate(Long id, Double eyesCount, Double toothCount) {
+        DragonHead dragonHead;
+        if (id != null) {
+            dragonHead = getById(id); // Fetch existing entity
+            if (dragonHead == null) {
+                throw new IllegalArgumentException("DragonHead with ID " + id + " does not exist");
+            }
+        } else {
+            dragonHead = new DragonHead(); // Create new entity
+        }
+
+        dragonHead.setEyesCount(eyesCount);
+        dragonHead.setToothCount(toothCount);
+
         return dragonHeadRepository.save(dragonHead);
     }
 
@@ -35,4 +48,3 @@ public class DragonHeadService {
         }
     }
 }
-
