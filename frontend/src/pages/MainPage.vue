@@ -20,8 +20,14 @@
         @create-person="openCreatePersonForm"
       />
     </div>
-    <component :is="currentTable" :dragons="dragons" :persons="persons" :dragonCaves="dragonCaves" :dragonHeads="dragonHeads" @edit-dragon="openEditDragonForm"/>
-
+    <component 
+      :is="currentTable" 
+      :dragons="dragons" 
+      :persons="persons" 
+      :dragonCaves="dragonCaves" 
+      :dragonHeads="dragonHeads" 
+      @edit-dragon="openEditDragonForm"
+    />
     <DragonForm
       v-if="isCreateDragonFormVisible"
       :killers="persons"
@@ -107,7 +113,7 @@ export default {
   methods: {
     navigateToMainPage() {
       this.$router.push({ name: 'main' });
-      this.stopPollingDragonHeads();
+      // this.stopPollingDragonHeads();
       this.stopPollingPersons();
       this.stopPollingDragonCaves();
       this.startPollingDragons();
@@ -119,21 +125,21 @@ export default {
       this.stopPollingDragons();
       this.stopPollingPersons();
       this.stopPollingDragonCaves();
-      this.startPollingDragonHeads();
+      // this.startPollingDragonHeads();
       this.currentTable = 'DragonHeadTable';
       this.currentCreateButton = 'CreateDragonHeadButton';
     },
     showDragonCaveTable() {
       this.stopPollingDragons();
       this.stopPollingPersons();
-      this.stopPollingDragonHeads();
+      // this.stopPollingDragonHeads();
       this.startPollingDragonCaves();
       this.currentTable = 'DragonCaveTable';
       this.currentCreateButton = 'CreateDragonCaveButton';
     },
     showPersonTable() {
       this.stopPollingDragons();
-      this.stopPollingDragonHeads();
+      // this.stopPollingDragonHeads();
       this.stopPollingDragonCaves();
       this.startPollingPersons();
       this.currentTable = 'PersonTable';
@@ -174,7 +180,7 @@ export default {
       this.isCreateDragonFormVisible = true;
     },
     handleDragonSubmit(dragonData) {
-      axios.post('/backend-1.0-SNAPSHOT/api/dragons', dragonData)
+      axios.post('/api/dragons', dragonData)
         .then(() => {
           this.closeCreateDragonForm();
           this.editData = null;
@@ -184,7 +190,13 @@ export default {
         });
     },
     handleDragonHeadSubmit(dragonHeadData) {
-      axios.post('/backend-1.0-SNAPSHOT/api/dragon-heads', dragonHeadData)
+      axios.post('/api/dragon-heads', {
+        id: null,
+        creatorId: null,
+        updatedTime: null,
+        eyesCount: Number(dragonHeadData.eyesCount),
+        toothCount: Number(dragonHeadData.toothCount),
+      })
         .then(() => {
           this.closeCreateDragonHeadForm();
           this.editData = null;
@@ -194,7 +206,7 @@ export default {
         });
     },
     handleDragonCaveSubmit(dragonCaveData) {
-      axios.post('/backend-1.0-SNAPSHOT/api/dragon-caves', dragonCaveData)
+      axios.post('/api/dragon-caves', dragonCaveData)
         .then(() => {
           this.closeCreateDragonHeadForm();
           this.editData = null;
@@ -204,8 +216,8 @@ export default {
         });
     },
     handlePersonSubmit(personData) {
-      axios.post('/backend-1.0-SNAPSHOT/api/persons', personData)
-        .then(() => {
+      axios.post('/api/persons', personData)
+      .then(() => {
           this.closeCreatePersonForm();
           this.editData = null;
         })
@@ -216,7 +228,7 @@ export default {
     startPollingDragons() {
       const pollDragons = async () => {
         try {
-          const response = await axios.get('/backend-1.0-SNAPSHOT/api/dragons');
+          const response = await axios.get('/api/dragons');
           this.dragons = response.data;
         } catch (error) {
           console.error('Error fetching dragons:', error);
@@ -227,24 +239,11 @@ export default {
       };
       pollDragons();
     },
-    startPollingDragonHeads() {
-      const pollDragonHeads = async () => {
-        try {
-          const response = await axios.get('/backend-1.0-SNAPSHOT/api/dragon-heads');
-          this.dragonHeads = response.data;
-        } catch (error) {
-          console.error('Error fetching dragon heads:', error);
-        } finally {
-          // Schedule next poll
-          this.polling.dragonHeads = setTimeout(pollDragonHeads, this.pollingInterval);
-        }
-      };
-      pollDragonHeads();
-    },
+    
     startPollingDragonCaves() {
       const pollDragonsCaves = async () => {
         try {
-          const response = await axios.get('/backend-1.0-SNAPSHOT/api/dragon-caves');
+          const response = await axios.get('/api/dragon-caves');
           this.dragonCaves = response.data;
         } catch (error) {
           console.error('Error fetching dragonCaves:', error);
@@ -258,7 +257,7 @@ export default {
     startPollingPersons() {
       const pollPersons = async () => {
         try {
-          const response = await axios.get('/backend-1.0-SNAPSHOT/api/persons');
+          const response = await axios.get('/api/persons');
           this.persons = response.data;
         } catch (error) {
           console.error('Error fetching persons:', error);
@@ -272,10 +271,6 @@ export default {
     stopPollingDragons() {
       clearTimeout(this.polling.dragons);
       this.polling.dragons = null;
-    },
-    stopPollingDragonHeads() {
-      clearTimeout(this.polling.dragonHeads);
-      this.polling.dragonHeads = null;
     },
     stopPollingDragonCaves() {
       clearTimeout(this.polling.dragonCaves);
@@ -292,7 +287,7 @@ export default {
   },
   beforeDestroy() {
     this.stopPollingDragons();
-    this.stopPollingDragonHeads();
+    // this.stopPollingDragonHeads();
     this.stopPollingDragonCaves();
     this.stopPollingPersons();
   }

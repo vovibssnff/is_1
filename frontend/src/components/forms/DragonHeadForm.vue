@@ -18,7 +18,7 @@
     data() {
       return {
         dragonHeadData: {
-          id: nil,
+          id: null,
           eyesCount: '',
           toothCount: '',
         }

@@ -1,11 +1,14 @@
 package com.vovi.backend.service;
 
 import com.vovi.backend.entity.DragonHead;
+import com.vovi.backend.entity.User;
 import com.vovi.backend.repository.DragonHeadRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
@@ -13,6 +16,9 @@ public class DragonHeadService {
 
     @Inject
     private DragonHeadRepository dragonHeadRepository;
+
+    @Inject
+    private UserService userService;
 
     public List<DragonHead> getAll() {
         return dragonHeadRepository.findAll();
@@ -23,19 +29,20 @@ public class DragonHeadService {
     }
 
     @Transactional
-    public DragonHead createOrUpdate(Long id, Double eyesCount, Double toothCount) {
+    public DragonHead createOrUpdate(User usr, Long id, Double eyesCount, Double toothCount) {
         DragonHead dragonHead;
         if (id != null) {
-            dragonHead = getById(id); // Fetch existing entity
+            dragonHead = getById(id);
             if (dragonHead == null) {
                 throw new IllegalArgumentException("DragonHead with ID " + id + " does not exist");
             }
         } else {
-            dragonHead = new DragonHead(); // Create new entity
+            dragonHead = new DragonHead(eyesCount, toothCount);
+            dragonHead.setName("default_name");
+            dragonHead.setCreatedBy(usr);
+            dragonHead.setCreatedTime(ZonedDateTime.now());
+//            dragonHead.setChangeHistory(new ArrayList<>());
         }
-
-        dragonHead.setEyesCount(eyesCount);
-        dragonHead.setToothCount(toothCount);
 
         return dragonHeadRepository.save(dragonHead);
     }

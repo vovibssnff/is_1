@@ -14,7 +14,7 @@ export default {
   name: 'PopupMenu',
   methods: {
     logout() {
-      axios.post('/backend-1.0-SNAPSHOT/auth/logout')
+      axios.post('/api/auth/logout')
         .then(response => {
           console.log(response.data);
           localStorage.clear();

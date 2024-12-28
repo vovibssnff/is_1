@@ -26,6 +26,8 @@
           @click="try_auth"
       >submit</button>
     </div>
+
+    <p v-if="notification" class="notification">{{ notification }}</p>
   </form>
 </template>
 
@@ -44,7 +46,8 @@ export default {
       errors: {
         login: '',
         password: ''
-      }
+      },
+      notification: '' // Consolidated field for notifications and errors
     };
   },
   methods: {
@@ -54,7 +57,7 @@ export default {
     },
     try_auth() {
       if (this.validateFields()) {
-        axios.post('/backend-1.0-SNAPSHOT/api/auth/login', {
+        axios.post('/api/auth/login', {
           username: this.usr.login,
           password: this.usr.password
         })
@@ -71,33 +74,33 @@ export default {
         })
         .catch(err => {
           console.error(err);
-          this.errors.login = "Invalid username or password";
+          this.notification = "Invalid username or password";
         });
       }
     },
     try_register() {
-      // axios.defaults.baseURL = '/backend-1.0-SNAPSHOT/';
       if (this.validateFields()) {
-        axios.post('/backend-1.0-SNAPSHOT/api/auth/register', {
+        axios.post('/api/auth/register', {
           username: this.usr.login,
           password: this.usr.password
         })
         .then(res => {
           if (res.status === 201) {
-            alert('Registration successful, now you can log in!');
+            this.notification = 'Registration successful, now you can log in!';
           } else {
-            alert(`Registration failed: ${res.data.message}`);
+            this.notification = `Registration failed: ${res.data.message}`;
           }
         })
         .catch(err => {
           console.error(err);
-          this.errors.login = err.response?.data || "Registration failed";
+          this.notification = err.response?.data || "Registration failed";
         });
       }
     },
     validateFields() {
       let isValid = true;
       this.errors.login = this.errors.password = ''; // Reset errors
+      this.notification = ''; // Reset notification
 
       if (!this.usr.login) {
         this.errors.login = "Login can't be empty";
@@ -151,6 +154,14 @@ form {
   font-size: 0.9em;
   margin-bottom: 10px;
   text-align: left;
+  width: 20%;
+}
+
+.notification {
+  color: #555;
+  font-size: 0.9em;
+  margin-top: 10px;
+  text-align: center;
   width: 20%;
 }
 

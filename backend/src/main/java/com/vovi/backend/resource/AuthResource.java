@@ -24,7 +24,6 @@ public class AuthResource {
     @Inject
     private UserService userService;
 
-
     @POST
     @Path("register")
     @Transactional

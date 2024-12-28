@@ -7,6 +7,7 @@ import com.vovi.backend.security.PasswordEncoder;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import java.util.Optional;
 
@@ -24,12 +25,16 @@ public class UserService {
         User user = new User();
         user.setUsername(username);
         user.setPassword(PasswordEncoder.encode(password));
-        user.setRole(UserRole.USER); // Default role
+        user.setRole(UserRole.USER);
         return userRepository.save(user);
     }
 
     public Optional<User> login(String username, String password) {
         return userRepository.findByUsername(username)
                 .filter(user -> user.getPassword().equals(PasswordEncoder.encode(password)));
+    }
+
+    public User getUserByRequest(HttpServletRequest request) {
+        return (User) request.getSession().getAttribute("user");
     }
 }

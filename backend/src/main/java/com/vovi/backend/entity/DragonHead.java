@@ -1,7 +1,10 @@
 package com.vovi.backend.entity;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
@@ -11,7 +14,9 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
+@NoArgsConstructor
 public class DragonHead extends BaseEntity {
 
     @Column(nullable = false)
@@ -20,8 +25,17 @@ public class DragonHead extends BaseEntity {
     @Column(nullable = false)
     private Double toothCount;
 
-    @OneToMany(mappedBy = "entity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "entity", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<ChangeHistory> changeHistory = new ArrayList<>();
+
+    public DragonHead(Double eyesCount, Double toothCount) {
+        super();
+        if (eyesCount == null || toothCount == null) {
+            throw new IllegalArgumentException("EyesCount and ToothCount must not be null");
+        }
+        this.eyesCount = eyesCount;
+        this.toothCount = toothCount;
+    }
 
     public void setUpdateFields(User updatedBy, ZonedDateTime updatedTime) {
         setUpdatedBy(updatedBy);

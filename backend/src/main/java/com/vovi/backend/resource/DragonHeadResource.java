@@ -3,6 +3,7 @@ package com.vovi.backend.resource;
 import com.vovi.backend.dto.DragonHeadDTO;
 import com.vovi.backend.entity.DragonHead;
 import com.vovi.backend.service.DragonHeadService;
+import com.vovi.backend.service.UserService;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Path("dragon-heads")
@@ -24,17 +26,51 @@ public class DragonHeadResource {
     @Inject
     private DragonHeadService dragonHeadService;
 
+    @Inject
+    private UserService userService;
+
     @GET
     public Response getAll() {
         List<DragonHead> dragonHeads = dragonHeadService.getAll();
-        return Response.ok(dragonHeads).build();
+        List<DragonHeadDTO> dtos = new ArrayList<>();
+        DragonHeadDTO dto;
+
+        for (DragonHead dragonHead : dragonHeads) {
+            dto = new DragonHeadDTO(dragonHead.getId(), dragonHead.getCreatedBy().getId(),
+                    dragonHead.getCreatedTime(), dragonHead.getEyesCount(), dragonHead.getToothCount());
+            dtos.add(dto);
+        }
+        return Response.ok(dtos).build();
     }
 
     @POST
     @Transactional
-    public Response createOrUpdate(@Context HttpServletRequest request, @Valid DragonHeadDTO dto) {
-        DragonHead savedDragonHead = dragonHeadService.createOrUpdate(dto.getId(), dto.getEyesCount(), dto.getToothCount());
-        return Response.ok(savedDragonHead).build();
+    public Response create(@Context HttpServletRequest request, @Valid DragonHeadDTO dto) {
+        try {
+            if (request.getSession().getAttribute("user") == null) {
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+            if (dto == null || dto.getId() != null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("ID must be null for creating a new Dragon Head").build();
+            }
+            DragonHead savedDragonHead = dragonHeadService.createOrUpdate(userService.getUserByRequest(request), null, dto.getEyesCount(), dto.getToothCount());
+            return Response.status(Response.Status.CREATED).entity(savedDragonHead.getId()).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
+        }
+    }
+
+    @PUT
+    @Path("{id}")
+    @Transactional
+    public Response update(@PathParam("id") Long id, @Context HttpServletRequest request, @Valid DragonHeadDTO dto) {
+        if (!id.equals(dto.getId())) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Path ID and DTO ID must match for updating").build();
+        }
+        DragonHead updatedDragonHead = dragonHeadService.createOrUpdate(userService.getUserByRequest(request), id, dto.getEyesCount(), dto.getToothCount());
+        return Response.ok(updatedDragonHead).build();
     }
 
     @DELETE

@@ -13,7 +13,7 @@ public class DragonApplication extends jakarta.ws.rs.core.Application {
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> set = new HashSet<Class<?>>();
-        set.add(CorsFilter.class);
+//        set.add(CorsFilter.class);
         set.add(DragonResource.class);
         set.add(DragonHeadResource.class);
         set.add(DragonCaveResource.class);
