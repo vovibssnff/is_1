@@ -41,4 +41,3 @@ public abstract class EntityChangeHistory<T extends BaseEntity> {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
-

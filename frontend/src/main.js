@@ -10,7 +10,7 @@ import store from './store'
 createApp(App)
     .use(store)
     .use(router)
-    .use(PrimeVue.Config, {
+    .use(PrimeVue, {
         theme: {
             preset: Aura,
         },

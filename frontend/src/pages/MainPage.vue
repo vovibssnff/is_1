@@ -11,15 +11,6 @@
       <PopupMenu v-if="isPopupVisible" @close="closePopupMenu" />
     </div>
 
-    <div class="create-button-container">
-      <component
-        :is="currentCreateButton"
-        @create-dragon="openCreateDragonForm"
-        @create-dragon-head="openCreateDragonHeadForm"
-        @create-dragon-cave="openCreateDragonCaveForm"
-        @create-person="openCreatePersonForm"
-      />
-    </div>
     <component 
       :is="currentTable" 
       :dragons="dragons" 
@@ -27,28 +18,6 @@
       :dragonCaves="dragonCaves" 
       :dragonHeads="dragonHeads" 
       @edit-dragon="openEditDragonForm"
-    />
-    <DragonForm
-      v-if="isCreateDragonFormVisible"
-      :killers="persons"
-      :dragon-data="editData"
-      @submit-dragon="handleDragonSubmit"
-      @close-form="closeCreateDragonForm"
-    />
-    <DragonHeadForm
-      v-if="isCreateDragonHeadFormVisible"
-      @submit-dragon-head="handleDragonHeadSubmit"
-      @close-form="closeCreateDragonHeadForm"
-    />
-    <DragonCaveForm
-      v-if="isCreateDragonCaveFormVisible"
-      @submit-dragon-cave="handleDragonCaveSubmit"
-      @close-form="closeCreateDragonCaveForm"
-    />
-    <PersonForm
-      v-if="isCreatePersonFormVisible"
-      @submit-person="handlePersonSubmit"
-      @close-form="closeCreatePersonForm"
     />
   </div>
 </template>
@@ -59,19 +28,9 @@ import PopupMenu from '@/components/PopupMenu.vue'
 import DragonTable from '@/components/tables/DragonTable.vue'
 import DragonHeadTable from '@/components/tables/DragonHeadTable.vue'
 import PersonTable from '@/components/tables/PersonTable.vue'
-import CreateDragonButton from '@/components/buttons/CreateDragonButton.vue'
-import CreateDragonHeadButton from '@/components/buttons/CreateDragonHeadButton.vue'
-import CreatePersonButton from '@/components/buttons/CreatePersonButton.vue'
-import DragonForm from '@/components/forms/DragonForm.vue'
-import DragonHeadForm from '@/components/forms/DragonHeadForm.vue'
-import PersonForm from '@/components/forms/PersonForm.vue'
-import axios, { formToJSON } from 'axios'
 import DragonCaveTable from '@/components/tables/DragonCaveTable.vue'
-import CreateDragonCaveButton from '@/components/buttons/CreateDragonCaveButton.vue'
-import DragonCaveForm from '@/components/forms/DragonCaveForm.vue'
 
 export default {
-  
   components: {
     VerticalMenu,
     PopupMenu,
@@ -79,14 +38,6 @@ export default {
     DragonHeadTable,
     PersonTable,
     DragonCaveTable,
-    CreateDragonButton,
-    CreateDragonHeadButton,
-    CreatePersonButton,
-    CreateDragonCaveButton,
-    DragonForm,
-    DragonHeadForm,
-    PersonForm,
-    DragonCaveForm,
   },
   data() {
     return {
@@ -113,35 +64,18 @@ export default {
   methods: {
     navigateToMainPage() {
       this.$router.push({ name: 'main' });
-      // this.stopPollingDragonHeads();
-      this.stopPollingPersons();
-      this.stopPollingDragonCaves();
-      this.startPollingDragons();
-
       this.currentTable = 'DragonTable';
       this.currentCreateButton = 'CreateDragonButton';
     },
     showDragonHeadTable() {
-      this.stopPollingDragons();
-      this.stopPollingPersons();
-      this.stopPollingDragonCaves();
-      // this.startPollingDragonHeads();
       this.currentTable = 'DragonHeadTable';
       this.currentCreateButton = 'CreateDragonHeadButton';
     },
     showDragonCaveTable() {
-      this.stopPollingDragons();
-      this.stopPollingPersons();
-      // this.stopPollingDragonHeads();
-      this.startPollingDragonCaves();
       this.currentTable = 'DragonCaveTable';
       this.currentCreateButton = 'CreateDragonCaveButton';
     },
     showPersonTable() {
-      this.stopPollingDragons();
-      // this.stopPollingDragonHeads();
-      this.stopPollingDragonCaves();
-      this.startPollingPersons();
       this.currentTable = 'PersonTable';
       this.currentCreateButton = 'CreatePersonButton';
     },
@@ -151,146 +85,10 @@ export default {
     closePopupMenu() {
       this.isPopupVisible = false;
     },
-    openCreateDragonForm() {
-      this.isCreateDragonFormVisible = true;
-    },
-    closeCreateDragonForm() {
-      this.isCreateDragonFormVisible = false;
-    },
-    openCreateDragonHeadForm() {
-      this.isCreateDragonHeadFormVisible = true;
-    },
-    closeCreateDragonHeadForm() {
-      this.isCreateDragonHeadFormVisible = false;
-    },
-    openCreateDragonCaveForm() {
-      this.isCreateDragonCaveFormVisible = true;
-    },
-    closeCreateDragonCaveForm() {
-      this.isCreateDragonCaveFormVisible = false;
-    },
-    openCreatePersonForm() {
-      this.isCreatePersonFormVisible = true;
-    },
-    closeCreatePersonForm() {
-      this.isCreatePersonFormVisible = false;
-    },
-    openEditDragonForm(dragon) {
-      this.editData = dragon;
-      this.isCreateDragonFormVisible = true;
-    },
-    handleDragonSubmit(dragonData) {
-      axios.post('/api/dragons', dragonData)
-        .then(() => {
-          this.closeCreateDragonForm();
-          this.editData = null;
-        })
-        .catch(error => {
-          console.error('Error submitting dragon:', error);
-        });
-    },
-    handleDragonHeadSubmit(dragonHeadData) {
-      axios.post('/api/dragon-heads', {
-        id: null,
-        creatorId: null,
-        updatedTime: null,
-        eyesCount: Number(dragonHeadData.eyesCount),
-        toothCount: Number(dragonHeadData.toothCount),
-      })
-        .then(() => {
-          this.closeCreateDragonHeadForm();
-          this.editData = null;
-        })
-        .catch(error => {
-          console.error('Error submitting dragonHead:', error);
-        });
-    },
-    handleDragonCaveSubmit(dragonCaveData) {
-      axios.post('/api/dragon-caves', dragonCaveData)
-        .then(() => {
-          this.closeCreateDragonHeadForm();
-          this.editData = null;
-        })
-        .catch(error => {
-          console.error('Error submitting dragonHead:', error);
-        });
-    },
-    handlePersonSubmit(personData) {
-      axios.post('/api/persons', personData)
-      .then(() => {
-          this.closeCreatePersonForm();
-          this.editData = null;
-        })
-        .catch(error => {
-          console.error('Error submitting person:', error);
-        });
-    },
-    startPollingDragons() {
-      const pollDragons = async () => {
-        try {
-          const response = await axios.get('/api/dragons');
-          this.dragons = response.data;
-        } catch (error) {
-          console.error('Error fetching dragons:', error);
-        } finally {
-          // Schedule next poll
-          this.polling.dragons = setTimeout(pollDragons, this.pollingInterval);
-        }
-      };
-      pollDragons();
-    },
-    
-    startPollingDragonCaves() {
-      const pollDragonsCaves = async () => {
-        try {
-          const response = await axios.get('/api/dragon-caves');
-          this.dragonCaves = response.data;
-        } catch (error) {
-          console.error('Error fetching dragonCaves:', error);
-        } finally {
-          // Schedule next poll
-          this.polling.dragonCaves = setTimeout(pollDragonsCaves, this.pollingInterval);
-        }
-      };
-      pollDragonsCaves();
-    },
-    startPollingPersons() {
-      const pollPersons = async () => {
-        try {
-          const response = await axios.get('/api/persons');
-          this.persons = response.data;
-        } catch (error) {
-          console.error('Error fetching persons:', error);
-        } finally {
-          // Schedule next poll
-          this.polling.persons = setTimeout(pollPersons, this.pollingInterval);
-        }
-      };
-      pollPersons();
-    },
-    stopPollingDragons() {
-      clearTimeout(this.polling.dragons);
-      this.polling.dragons = null;
-    },
-    stopPollingDragonCaves() {
-      clearTimeout(this.polling.dragonCaves);
-      this.polling.dragonCaves = null;
-    },
-    stopPollingPersons() {
-      clearTimeout(this.polling.persons);
-      this.polling.persons = null;
-    },
-
   },
   mounted() {
     this.navigateToMainPage();
   },
-  beforeDestroy() {
-    this.stopPollingDragons();
-    // this.stopPollingDragonHeads();
-    this.stopPollingDragonCaves();
-    this.stopPollingPersons();
-  }
 }
 </script>
 

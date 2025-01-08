@@ -23,13 +23,13 @@ public class DragonHeadRepository {
         return entityManager.find(DragonHead.class, id);
     }
 
-    public DragonHead save(DragonHead dragonHead) {
+    public Long save(DragonHead dragonHead) {
         if (dragonHead.getId() == null) {
             entityManager.persist(dragonHead);
         } else {
             dragonHead = entityManager.merge(dragonHead);
         }
-        return dragonHead;
+        return dragonHead.getId();
     }
 
     public void delete(DragonHead dragonHead) {

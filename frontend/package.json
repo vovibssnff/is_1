@@ -7,19 +7,24 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@primevue/core": "^4.2.5",
     "@primevue/themes": "^4.2.5",
+    "@vueuse/core": "^12.3.0",
     "axios": "^1.7.9",
     "core-js": "^3.8.3",
+    "primeicons": "^7.0.0",
     "primevue": "^4.2.5",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "~5.0.0",
-    "@vue/cli-plugin-router": "~5.0.0",
-    "@vue/cli-plugin-vuex": "~5.0.0",
-    "@vue/cli-service": "~5.0.0"
+    "@vue/cli-plugin-babel": "^5.0.8",
+    "@vue/cli-plugin-router": "^5.0.8",
+    "@vue/cli-plugin-vuex": "^5.0.8",
+    "@vue/cli-service": "^5.0.8"
   },
   "browserslist": [
     "> 1%",

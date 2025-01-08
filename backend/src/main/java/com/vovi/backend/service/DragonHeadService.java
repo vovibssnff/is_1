@@ -29,21 +29,31 @@ public class DragonHeadService {
     }
 
     @Transactional
-    public DragonHead createOrUpdate(User usr, Long id, Double eyesCount, Double toothCount) {
+    public Long createOrUpdate(User usr, Long id, Double eyesCount, Double toothCount) {
         DragonHead dragonHead;
         if (id != null) {
+            // Retrieve the existing DragonHead by id
             dragonHead = getById(id);
             if (dragonHead == null) {
                 throw new IllegalArgumentException("DragonHead with ID " + id + " does not exist");
             }
+
+            if (eyesCount != null) {
+                dragonHead.setEyesCount(eyesCount);
+            }
+            if (toothCount != null) {
+                dragonHead.setToothCount(toothCount);
+            }
+            dragonHead.setUpdateFields(usr, ZonedDateTime.now());
         } else {
+            // Create a new DragonHead instance if no ID is provided
             dragonHead = new DragonHead(eyesCount, toothCount);
             dragonHead.setName("default_name");
             dragonHead.setCreatedBy(usr);
             dragonHead.setCreatedTime(ZonedDateTime.now());
-//            dragonHead.setChangeHistory(new ArrayList<>());
+            // dragonHead.setChangeHistory(new ArrayList<>());
         }
-
+        // Save the DragonHead (new or updated) and return it
         return dragonHeadRepository.save(dragonHead);
     }
 

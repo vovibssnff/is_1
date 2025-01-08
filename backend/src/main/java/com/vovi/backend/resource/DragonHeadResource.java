@@ -37,7 +37,7 @@ public class DragonHeadResource {
 
         for (DragonHead dragonHead : dragonHeads) {
             dto = new DragonHeadDTO(dragonHead.getId(), dragonHead.getCreatedBy().getId(),
-                    dragonHead.getCreatedTime(), dragonHead.getEyesCount(), dragonHead.getToothCount());
+                    dragonHead.getUpdatedTime(), dragonHead.getEyesCount(), dragonHead.getToothCount());
             dtos.add(dto);
         }
         return Response.ok(dtos).build();
@@ -54,8 +54,8 @@ public class DragonHeadResource {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("ID must be null for creating a new Dragon Head").build();
             }
-            DragonHead savedDragonHead = dragonHeadService.createOrUpdate(userService.getUserByRequest(request), null, dto.getEyesCount(), dto.getToothCount());
-            return Response.status(Response.Status.CREATED).entity(savedDragonHead.getId()).build();
+            Long savedDragonHeadID = dragonHeadService.createOrUpdate(userService.getUserByRequest(request), null, dto.getEyesCount(), dto.getToothCount());
+            return Response.status(Response.Status.CREATED).entity(savedDragonHeadID).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
         }
@@ -69,14 +69,20 @@ public class DragonHeadResource {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("Path ID and DTO ID must match for updating").build();
         }
-        DragonHead updatedDragonHead = dragonHeadService.createOrUpdate(userService.getUserByRequest(request), id, dto.getEyesCount(), dto.getToothCount());
-        return Response.ok(updatedDragonHead).build();
+        if (!dragonHeadService.getById(id).isEditableByUser(userService.getUserByRequest(request))) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+        Long updatedDragonHeadID = dragonHeadService.createOrUpdate(userService.getUserByRequest(request), id, dto.getEyesCount(), dto.getToothCount());
+        return Response.ok(updatedDragonHeadID).build();
     }
 
     @DELETE
     @Path("{id}")
     @Transactional
-    public Response delete(@PathParam("id") Long id) {
+    public Response delete(@PathParam("id") Long id, @Context HttpServletRequest request) {
+        if (!dragonHeadService.getById(id).isEditableByUser(userService.getUserByRequest(request))) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
         dragonHeadService.delete(id);
         return Response.noContent().build();
     }

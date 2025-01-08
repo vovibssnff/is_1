@@ -9,7 +9,7 @@
           <th>Name</th>
           <th>Coordinates (X, Y)</th>
           <th>Creation Date</th>
-          <th>Cave Depth</th>
+          <th>Cave Depth</th>  <!-- this is DragonCave-->
           <th>Number of Treasures</th>
           <th>Killer Name</th>
           <th>Age</th>
