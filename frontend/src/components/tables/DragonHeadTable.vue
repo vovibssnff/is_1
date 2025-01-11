@@ -5,7 +5,6 @@
     <Toolbar class="mb-6">
       <template #start>
         <Button label="New" icon="pi pi-plus" class="mr-2" @click="openNew" />
-        <!-- <Button label="Delete" icon="pi pi-trash" severity="danger" outlined @click="confirmDeleteSelected" :disabled="!selectedDragonHeads || !selectedDragonHeads.length" /> -->
       </template>
 
       <template #end>
@@ -55,11 +54,23 @@
       <div class="flex flex-col gap-6">
         <div>
           <label for="eyesCount" class="block font-bold mb-3">Eyes Count</label>
-          <InputNumber id="eyesCount" v-model="dragonHead.eyesCount" integeronly fluid />
+          <InputNumber 
+            id="eyesCount" 
+            v-model="dragonHead.eyesCount" 
+            :minFractionDigits="1" 
+            :maxFractionDigits="2" 
+            fluid 
+          />
         </div>
         <div>
           <label for="toothCount" class="block font-bold mb-3">Tooth Count</label>
-          <InputNumber id="toothCount" v-model="dragonHead.toothCount" integeronly fluid />
+          <InputNumber 
+            id="toothCount" 
+            v-model="dragonHead.toothCount" 
+            :minFractionDigits="1" 
+            :maxFractionDigits="2" 
+            fluid 
+          />
         </div>
       </div>
 
@@ -70,11 +81,10 @@
     </Dialog>
     
   </div>
-
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import axios from "axios";
 import { useToast } from "primevue/usetoast";
 import DataTable from "primevue/datatable";
@@ -215,8 +225,10 @@ export default {
       }
     };
 
+    let longPollingInterval;
+
     const startLongPolling = () => {
-      setInterval(() => {
+      longPollingInterval = setInterval(() => {
         fetchDragonHeads();
       }, 5000);
     };
@@ -224,6 +236,10 @@ export default {
     onMounted(() => {
       fetchDragonHeads();
       startLongPolling();
+    });
+
+    onUnmounted(() => {
+      clearInterval(longPollingInterval);
     });
 
     return {

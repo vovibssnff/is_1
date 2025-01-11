@@ -5,35 +5,35 @@
       class="input"
       type="text"
       placeholder="login"
+      :disabled="loading"
     />
-    <p v-if="errors.login" class="error-message">{{ errors.login }}</p>
-    
+    <p v-if="loginErrors.login" class="error-message">{{ loginErrors.login }}</p>
     <input
       v-model.trim="usr.password"
       class="input"
       type="password"
       placeholder="password"
+      :disabled="loading"
     />
-    <p v-if="errors.password" class="error-message">{{ errors.password }}</p>
-    
+    <p v-if="loginErrors.password" class="error-message">{{ loginErrors.password }}</p>
     <div class="btn_container">
       <button
-          class="btn"
-          @click="try_register"
+        class="btn"
+        @click="try_register"
+        :disabled="loading"
       >register</button>
       <button
-          class="btn"
-          @click="try_auth"
+        class="btn"
+        @click="try_auth"
+        :disabled="loading"
       >submit</button>
     </div>
-
     <p v-if="notification" class="notification">{{ notification }}</p>
   </form>
 </template>
 
 <script>
-import axios from 'axios';
-import { mapMutations } from 'vuex';
+import { mapState, mapMutations, mapActions } from 'vuex';
 import router from '@/router/index';
 
 export default {
@@ -43,74 +43,75 @@ export default {
         login: '',
         password: ''
       },
-      errors: {
-        login: '',
-        password: ''
-      },
-      notification: '' // Consolidated field for notifications and errors
+      loading: false
     };
   },
+  computed: {
+    ...mapState('auth', {
+      loginErrors: state => state.loginErrors,
+      notification: state => state.notification
+    })
+  },
   methods: {
-    ...mapMutations('dotModule', ['setAuthorized']),
-    auth(val) {
-      this.setAuthorized(val);
-    },
-    try_auth() {
-      if (this.validateFields()) {
-        axios.post('/api/auth/login', {
-          username: this.usr.login,
-          password: this.usr.password
-        })
-        .then(res => {
-          if (res.status === 200) {
-            const user = res.data;
-            this.auth(true);
-            localStorage.setItem('isAuthorized', true);
-            localStorage.setItem('userId', user.userId);
-            localStorage.setItem('username', user.username);
-            localStorage.setItem('userRole', user.role);
-            router.push('/main');
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          this.notification = "Invalid username or password";
-        });
-      }
-    },
-    try_register() {
-      if (this.validateFields()) {
-        axios.post('/api/auth/register', {
-          username: this.usr.login,
-          password: this.usr.password
-        })
-        .then(res => {
-          if (res.status === 201) {
-            this.notification = 'Registration successful, now you can log in!';
-          } else {
-            this.notification = `Registration failed: ${res.data.message}`;
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          this.notification = err.response?.data || "Registration failed";
-        });
-      }
-    },
+    ...mapMutations('auth', ['setLoginErrors', 'clearErrors']),
+    ...mapActions('auth', ['loginUser', 'registerUser']),
+    
     validateFields() {
       let isValid = true;
-      this.errors.login = this.errors.password = ''; // Reset errors
-      this.notification = ''; // Reset notification
-
+      const errors = {
+        login: '',
+        password: ''
+      };
+      
       if (!this.usr.login) {
-        this.errors.login = "Login can't be empty";
+        errors.login = "Login can't be empty";
         isValid = false;
       }
       if (!this.usr.password) {
-        this.errors.password = "Password can't be empty";
+        errors.password = "Password can't be empty";
         isValid = false;
       }
+      
+      this.setLoginErrors(errors);
       return isValid;
+    },
+    
+    async try_auth() {
+      if (this.loading) return;
+      
+      this.clearErrors();
+      if (this.validateFields()) {
+        try {
+          this.loading = true;
+          const result = await this.loginUser({
+            username: this.usr.login,
+            password: this.usr.password
+          });
+          
+          if (result.success) {
+            await router.push('/main');
+          }
+        } finally {
+          this.loading = false;
+        }
+      }
+    },
+    
+    async try_register() {
+      if (this.loading) return;
+      
+      this.clearErrors();
+      if (this.validateFields()) {
+        try {
+          this.loading = true;
+          await this.registerUser({
+            username: this.usr.login,
+            password: this.usr.password
+          });
+        } finally {
+          this.loading = false;
+        }
+      }
     }
   }
 };

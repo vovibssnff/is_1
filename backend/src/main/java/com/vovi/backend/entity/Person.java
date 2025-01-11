@@ -28,7 +28,7 @@ public class Person extends BaseEntity {
     private Location location = new Location();
 
     @Column(nullable = false, length = 38)
-    private String passportID;
+    private String passportId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

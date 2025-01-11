@@ -19,6 +19,7 @@ public class DragonApplication extends jakarta.ws.rs.core.Application {
         set.add(DragonCaveResource.class);
         set.add(PersonResource.class);
         set.add(AuthResource.class);
+        set.add(SpecialDragonResource.class);
         return set;
     }
 }

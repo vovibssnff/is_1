@@ -6,9 +6,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import java.util.EnumMap;
+
 import java.util.List;
-import java.util.Map;
 
 @ApplicationScoped
 public class DragonRepository {
@@ -21,6 +20,10 @@ public class DragonRepository {
         return query.getResultList();
     }
 
+    public Dragon findById(Long id) {
+        return entityManager.find(Dragon.class, id);
+    }
+
     public Dragon save(Dragon dragon) {
         if (dragon.getId() == null) {
             entityManager.persist(dragon);
@@ -31,29 +34,42 @@ public class DragonRepository {
     }
 
     public void delete(Dragon dragon) {
+        if (!entityManager.contains(dragon)) {
+            dragon = entityManager.merge(dragon);
+        }
         entityManager.remove(dragon);
     }
 
-    public Map<DragonCharacter, Long> countGroupedByCharacter() {
-        List<Object[]> results = entityManager.createQuery(
-                        "SELECT d.character, COUNT(d) FROM Dragon d GROUP BY d.character", Object[].class)
-                .getResultList();
-
-        Map<DragonCharacter, Long> counts = new EnumMap<>(DragonCharacter.class);
-        for (Object[] result : results) {
-            counts.put((DragonCharacter) result[0], (Long) result[1]);
-        }
-        return counts;
+    public Object[] getMinimalIdDragon() {
+        return (Object[]) entityManager.createNativeQuery(
+                "SELECT id, name, updatedtime " +
+                        "FROM Dragon " +
+                        "WHERE id = (SELECT MIN(id) FROM Dragon)"
+        ).getSingleResult();
     }
 
-    public long countByCharacterGreaterThan(DragonCharacter character) {
+    public List getDragonCharacterGrouping() {
+        return entityManager.createNativeQuery(
+                "SELECT character, COUNT(*) " +
+                        "FROM Dragon " +
+                        "GROUP BY character"
+        ).getResultList();
+    }
+
+
+    public Long countDragonsWithCharacterGreaterThan(String inputCharacter) {
         return entityManager.createQuery(
-                        "SELECT COUNT(d) FROM Dragon d WHERE d.character > :character", Long.class)
-                .setParameter("character", character)
+                        "SELECT COUNT(d) " +
+                                "FROM Dragon d " +
+                                "WHERE d.character > :inputCharacter", Long.class)
+                .setParameter("inputCharacter", DragonCharacter.valueOf(inputCharacter))
                 .getSingleResult();
     }
 
-    public java.util.Optional<Dragon> findById(Long id) {
-        return java.util.Optional.ofNullable(entityManager.find(Dragon.class, id));
+    public void killDragonById(Long dragonId) {
+        entityManager.createNativeQuery(
+                        "DELETE FROM Dragon WHERE id = :id"
+                ).setParameter("id", dragonId)
+                .executeUpdate();
     }
 }

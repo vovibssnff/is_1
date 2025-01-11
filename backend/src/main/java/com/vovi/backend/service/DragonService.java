@@ -1,16 +1,15 @@
 package com.vovi.backend.service;
 
-import com.vovi.backend.entity.Dragon;
-import com.vovi.backend.entity.DragonCharacter;
-import com.vovi.backend.entity.User;
-import com.vovi.backend.exception.PermissionDeniedException;
+import com.vovi.backend.dto.DragonDTO;
+import com.vovi.backend.entity.*;
 import com.vovi.backend.repository.DragonRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotFoundException;
+
+import java.time.ZonedDateTime;
+import java.time.temporal.TemporalAccessor;
 import java.util.List;
-import java.util.Map;
 
 @ApplicationScoped
 public class DragonService {
@@ -18,55 +17,126 @@ public class DragonService {
     @Inject
     private DragonRepository dragonRepository;
 
-    public List<Dragon> getAllDragons() {
+    @Inject
+    private PersonService personService;
+    @Inject
+    private DragonCaveService dragonCaveService;
+    @Inject
+    private DragonHeadService dragonHeadService;
+
+    public List<Dragon> getAll() {
         return dragonRepository.findAll();
     }
 
-    @Transactional
-    public Dragon createDragon(Dragon dragon, User createdBy) {
-        dragon.setCreatedBy(createdBy);
-        return dragonRepository.save(dragon);
+    public Dragon getById(Long id) {
+        return dragonRepository.findById(id);
     }
 
     @Transactional
-    public void deleteDragon(Long dragonId, User user) {
-        Dragon dragon = dragonRepository.findById(dragonId)
-                .orElseThrow(() -> new IllegalArgumentException("Dragon not found with id: " + dragonId));
+    public Long createOrUpdate(User usr, DragonDTO dragonDTO) {
+        Dragon dragon;
 
-        if (!dragon.isEditableByUser(user)) {
-            throw new PermissionDeniedException("User does not have permission to delete this dragon.");
+        if (dragonDTO.getId() != null) {
+            // Retrieve the existing Dragon by id
+            dragon = getById(dragonDTO.getId());
+            if (dragon == null) {
+                throw new IllegalArgumentException("Dragon with ID " + dragonDTO.getId() + " does not exist");
+            }
+
+            // Update fields
+            updateDragonFields(dragon, dragonDTO, usr);
+        } else {
+            // Create a new Dragon
+            dragon = new Dragon();
+            updateDragonFields(dragon, dragonDTO, usr);
+            dragon.setCreatedBy(usr);
+            dragon.setCreatedTime(ZonedDateTime.now());
         }
 
-        dragonRepository.delete(dragon);
+        // Save and return the dragon's ID
+        return dragonRepository.save(dragon).getId();
     }
 
     @Transactional
-    public Dragon updateDragon(Long dragonId, Dragon updatedDragon, User user) {
-        Dragon dragon = dragonRepository.findById(dragonId)
-                .orElseThrow(() -> new IllegalArgumentException("Dragon not found with id: " + dragonId));
+    public void delete(Long id) {
+        Dragon dragon = getById(id);
+        if (dragon != null) {
+            dragonRepository.delete(dragon);
+        }
+    }
 
-        if (!dragon.isEditableByUser(user)) {
-            throw new PermissionDeniedException("User does not have permission to edit this dragon.");
+    public DragonDTO getMinimalIdDragon() {
+        Object[] result = dragonRepository.getMinimalIdDragon();
+        DragonDTO dto = new DragonDTO();
+        dto.setId(((Number) result[0]).longValue());
+        dto.setName((String) result[1]);
+        dto.setUpdatedTime(((java.util.Date) result[2]).toInstant().atZone(java.time.ZoneId.systemDefault()));
+        return dto;
+    }
+
+    public List getDragonCharacterGrouping() {
+        return dragonRepository.getDragonCharacterGrouping();
+    }
+
+    public Long countDragonsWithCharacterGreaterThan(String inputCharacter) {
+        return dragonRepository.countDragonsWithCharacterGreaterThan(inputCharacter);
+    }
+
+    @Transactional
+    public void killDragonById(Long dragonId) {
+        dragonRepository.delete(dragonRepository.findById(dragonId));
+    }
+
+    private void updateDragonFields(Dragon dragon, DragonDTO dragonDTO, User usr) {
+        if (dragonDTO.getName() != null) {
+            dragon.setName(dragonDTO.getName());
+        }
+        if (dragonDTO.getX() != null) {
+            dragon.getCoordinates().setX(dragonDTO.getX());
+        }
+        if (dragonDTO.getY() != null) {
+            dragon.getCoordinates().setY(dragonDTO.getY());
+        }
+        if (dragonDTO.getCaveId() != null) {
+            dragon.setCave(dragonCaveService.getById(dragonDTO.getCaveId()));
+        }
+        if (dragonDTO.getPersonId() != null) {
+            dragon.setKiller(personService.getById(dragonDTO.getPersonId()));
+        }
+        if (dragonDTO.getAge() != null) {
+            dragon.setAge(dragonDTO.getAge());
+        }
+        if (dragonDTO.getColor() != null) {
+            dragon.setColor(dragonDTO.getColor());
+        }
+        if (dragonDTO.getType() != null) {
+            dragon.setType(dragonDTO.getType());
+        }
+        if (dragonDTO.getCharacter() != null) {
+            dragon.setCharacter(dragonDTO.getCharacter());
+        }
+        if (dragonDTO.getHeadId() != null) {
+            dragon.setHead(dragonHeadService.getById(dragonDTO.getHeadId()));
         }
 
-        dragon.setName(updatedDragon.getName());
-        dragon.setAge(updatedDragon.getAge());
-        dragon.setCoordinates(updatedDragon.getCoordinates());
-        dragon.setCave(updatedDragon.getCave());
-        dragon.setCharacter(updatedDragon.getCharacter());
-        dragon.setColor(updatedDragon.getColor());
-        dragon.setType(updatedDragon.getType());
-        dragon.setKiller(updatedDragon.getKiller());
-        dragon.setHead(updatedDragon.getHead());
-
-        return dragonRepository.save(dragon);
+        dragon.setUpdateFields(usr, ZonedDateTime.now());
     }
 
-    public Map<DragonCharacter, Long> countDragonsByCharacter() {
-        return dragonRepository.countGroupedByCharacter();
-    }
-
-    public long countDragonsWithCharacterGreaterThan(DragonCharacter character) {
-        return dragonRepository.countByCharacterGreaterThan(character);
+    public DragonDTO toDto(Dragon dragon) {
+        return new DragonDTO(
+                dragon.getId(),
+                dragon.getCreatedBy() != null ? dragon.getCreatedBy().getId() : null,
+                dragon.getUpdatedTime(),
+                dragon.getName(),
+                dragon.getCoordinates().getX(),
+                dragon.getCoordinates().getY(),
+                dragon.getCave().getId(),
+                dragon.getKiller().getId(),
+                dragon.getAge(),
+                dragon.getColor(),
+                dragon.getType(),
+                dragon.getCharacter(),
+                dragon.getHead().getId()
+        );
     }
 }

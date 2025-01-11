@@ -24,4 +24,12 @@ public class UserRepository {
         entityManager.persist(user);
         return user;
     }
+
+    public User findById(Long id) {
+        return entityManager.find(User.class, id);
+    }
+
+    public User update(User user) {
+        return entityManager.merge(user);
+    }
 }
